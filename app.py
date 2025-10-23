@@ -16,7 +16,8 @@ WEBHOOK_PATH = f"/webhook/{TOKEN.split(':')[0]}"
 async def on_startup():
     if not WEBHOOK_BASE:
         raise RuntimeError("WEBHOOK_BASE environment variable not set")
-    await bot.set_webhook(url=WEBHOOK_BASE + WEBHOOK_PATH)
+    # app.py: on_startup()
+    await bot.set_webhook(url=WEBHOOK_BASE + WEBHOOK_PATH, drop_pending_updates=True)
     logging.info("✅ Webhook set to %s", WEBHOOK_BASE + WEBHOOK_PATH)
 
 @app.on_event("shutdown")
