@@ -1,5 +1,5 @@
 import os
-import logging
+import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
@@ -38,18 +38,34 @@ async def start(message: Message):
 async def help_cmd(message: Message):
     await message.answer("ℹ️ Оддий: чатга Location юборинг. Мен эса координатани матн кўринишида жўнатаман.")
 
+# 5 дақиқалик оддий TTL-кеш
+_SEEN: dict[str, float] = {}
+
+def _seen_once(message: Message, ttl_sec: int = 300) -> bool:
+    now = time.time()
+    # эскиларни тозалаш
+    for k, t in list(_SEEN.items()):
+        if now - t > ttl_sec:
+            del _SEEN[k]
+    key = f"{message.chat.id}:{message.message_id}"
+    if key in _SEEN:
+        return True
+    _SEEN[key] = now
+    return False
+
 @dp.message(F.location)
 async def handle_location(message: Message):
+    if _seen_once(message):
+        return  # 🔒 дубликат келса — ингор қилиб қўямиз
+
     lat = message.location.latitude
     lon = message.location.longitude
-    coords = fmt_coord(lat, lon)  # "38.859555, 65.796147"
+    coords = fmt_coord(lat, lon)
 
     text = (
         "📍 <b>Мижоз координаталари:</b>\n\n"
         f"<code>{coords}</code>\n"
     )
-
-    # reply() → answer() fallback (эски лойиҳангиздаги каби)
     try:
         await message.reply(text)
     except TelegramBadRequest:
