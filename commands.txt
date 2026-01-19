@@ -1,0 +1,11 @@
+# Ботни локалда поллингда ишлатиш командаси
+python run_polling.py
+
+
+git add app.py runtime.txt requirements.txt Procfile
+git commit -m "Make app run in polling/webhook modes; fix runtime"
+
+git push origin main
+
+git push heroku main
+
