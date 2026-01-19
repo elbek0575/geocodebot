@@ -62,6 +62,35 @@ def _seen_once(message: Message, ttl_sec: int = 300) -> bool:
     return False
 
 
+@dp.message(F.text)
+async def handle_suv_kerak_trigger(message: Message):
+    # Фақат group/supergroup’да ишласин
+    if message.chat.type not in ("group", "supergroup"):
+        return
+
+    txt = (message.text or "").strip().lower()
+    if not txt:
+        return
+
+    # Триггер сўзлар (матннинг ичида учраса ҳам бўлади)
+    triggers = ("сув керак", "suv kerak")
+
+    if not any(t in txt for t in triggers):
+        return
+
+    user_id = message.from_user.id if message.from_user else message.chat.id
+
+    reply_text = (
+        "👤 <b>USER_ID:</b>\n"
+        f"<code>{user_id}</code>"
+    )
+
+    try:
+        await message.reply(reply_text)
+    except TelegramBadRequest:
+        await message.answer(reply_text)
+
+
 @dp.message(F.location)
 async def handle_location(message: Message):
     if _seen_once(message):
